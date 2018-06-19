@@ -12,7 +12,7 @@ def auth_error():
 
     import sqlite3
     import getpass
-    # /home/hujinqi/.config/google-chrome/Default
+    # /home/username/.config/google-chrome/Default
     path = f'/home/{getpass.getuser()}/.config/google-chrome/Default/Cookies'
     
     conn = sqlite3.connect(path)
