@@ -9,10 +9,12 @@ import json
 import datetime
 try:
     from JiraTools.config import Config
+    from JiraTools import printer
 except Exception as e:
     pwd = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(os.path.dirname(pwd))
     from JiraTools.config import Config
+    from JiraTools import printer
 
 class JIRAUser:
 
@@ -53,7 +55,7 @@ class JIRAUser:
         # use username password to login
         if self.password is None \
             or self.username is None:
-            print('chrome browser >>> https://cas.mioffice.cn/login to refresh chrome-cookie')
+            printer.auth_error()
             exit(1)
         
         headers = {
@@ -105,11 +107,15 @@ class JIRAUser:
         print('\n','filter >>> %s'%filterstr, sep='')
         # no-check
         response = self.session.get('http://jira.n.xiaomi.com/issues/?filter=-1')
+        if response.url != 'http://jira.n.xiaomi.com/issues/?filter=-1':
+            printer.auth_error()
+            exit(0)
+
         response = self.session.post('http://jira.n.xiaomi.com/rest/issueNav/1/issueTable', data=params, headers=headers)
         
         if response.status_code != 200:
             print(response.text)
-            print('chrome browser >>> https://cas.mioffice.cn/login to refresh chrome-cookie')
+            printer.auth_error()
             exit(1)
 
         html = HTML(html=response.text)

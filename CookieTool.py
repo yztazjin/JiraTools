@@ -1,6 +1,7 @@
 from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import PBKDF2
 
+
 # Function to get rid of padding
 def decrypt(my_pass, encrypted_value):
 
@@ -31,6 +32,17 @@ def decrypt(my_pass, encrypted_value):
 
 
 def chrome_cookie():
+    import time
+
+    max_time = 0
+    while not check_chrome_autoupdate():
+        print(f'wait chrome aotu update cookies ...')
+        time.sleep(5)
+        max_time += 5
+
+        if  max_time >= 60:
+            print(f'wait failed')
+            exit(0)
 
     import secretstorage
 
@@ -51,7 +63,7 @@ def chrome_cookie():
     
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
-    cursor = conn.execute("select name, encrypted_value from cookies where host_key = 'cas.mioffice.cn'")
+    cursor.execute("select name, encrypted_value from cookies where host_key = 'cas.mioffice.cn'")
 
     cookie = "" 
     for row in cursor:
@@ -62,3 +74,44 @@ def chrome_cookie():
     conn.close()
 
     return cookie[0:-2]
+
+
+def check_chrome_autoupdate():
+    import os,sys
+    
+    try:
+        from JiraTools.config import Config
+    except Exception:
+        pwd = os.path.dirname(os.path.abspath(__file__))
+        sys.path.append(os.path.dirname(pwd))
+        from JiraTools.config import Config
+
+    config_flag_value = Config.load_config()['cookie_update_flag']
+    
+    if config_flag_value == 0:
+        return True
+
+    import sqlite3
+    import getpass
+    # /home/hujinqi/.config/google-chrome/Default
+    path = f'/home/{getpass.getuser()}/.config/google-chrome/Default/Cookies'
+    
+    conn = sqlite3.connect(path)
+    cursor = conn.cursor()
+    cursor.execute("select last_access_utc from cookies where host_key = 'cas.mioffice.cn' and name = 'TGC'")
+    datas = cursor.fetchall()
+    
+    flag_value = -100
+    if len(datas) > 0:
+        flag_value = datas[0][0]
+    elif config_flag_value != -100:
+        print('make sure you have refresh the https://cas.mioffice.cn/login on chrome')
+        exit(1)
+
+    if flag_value != config_flag_value:
+        config = Config.load_config()
+        config['cookie_update_flag'] = 0
+        Config.dump_config(config)
+        return True
+    
+    return False

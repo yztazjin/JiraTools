@@ -2,19 +2,20 @@ import os
 import sys
 import json
 import re
-try:
-    from JiraTools import CookieTool
-except Exception as e:
-    pwd = os.path.dirname(os.path.abspath(__file__))
-    pwd = os.path.dirname(pwd)
-    pwd = os.path.dirname(pwd)
-    sys.path.append(pwd)
-    from JiraTools import CookieTool
+
 
 __cache = None
 
 
 def get_cookie():
+    try:
+        from JiraTools import CookieTool
+    except Exception:
+        pwd = os.path.dirname(os.path.abspath(__file__))
+        pwd = os.path.dirname(pwd)
+        pwd = os.path.dirname(pwd)
+        from JiraTools import CookieTool
+
     return CookieTool.chrome_cookie()
 
 
@@ -99,6 +100,9 @@ def load_config():
 
     if __cache.get('user') == None:
         __cache['user'] = {}
+
+    if __cache.get('cookie_update_flag') == None:
+        __cache['cookie_update_flag'] = 0
 
     return __cache
 

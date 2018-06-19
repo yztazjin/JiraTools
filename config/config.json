@@ -15,5 +15,7 @@
         "cts-other": "status in (open, \"In Progress\", Reopened, Reopen, reopend) AND component = \"系统稳定性-CTS/GTS\" AND assignee not in (weijuncheng, hujinqi) AND type in (Bug, 线上BUG) ORDER BY updated DESC",
         "cts-self": "assignee in (weijuncheng, hujinqi) And type in (线上BUG, Bug) And status in (open, \"In Progress\", Reopened, Reopen, reopend) ORDER BY updated DESC",
         "cts-all": "status in (open, \"In Progress\", Reopened, Reopen, reopend) AND component = \"系统稳定性-CTS/GTS\" AND type in (Bug, 线上BUG) ORDER BY updated DESC"
-    }
+    },
+    "user": {},
+    "cookie_update_flag": 0
 }
