@@ -58,6 +58,8 @@ def chrome_cookie():
 
     cookie = "" 
     for row in cursor:
+        if row[0] == 'CASTGC':
+            continue
         ENCRYPTED_VALUE = row[1]
         cookie += row[0] + "=" + decrypt(MY_PASS, ENCRYPTED_VALUE) +"; "
     conn.close()

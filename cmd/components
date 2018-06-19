@@ -7,6 +7,8 @@ import getpass
 
 if getpass.getuser() == 'hujinqi':
     sys.path.append('/home/hujinqi/Workspaces/pythons')
+if getpass.getuser() == 'weijuncheng':
+	sys.path.append('/home/weijuncheng/tools/jiratools')
 
 from JiraTools.JiraComponents import main
 
