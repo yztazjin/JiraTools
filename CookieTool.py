@@ -36,7 +36,7 @@ def chrome_cookie():
 
     max_time = 0
     while not check_chrome_autoupdate():
-        print(f'wait chrome aotu update cookies ...')
+        print(f'wait chrome auto update cookies ...')
         time.sleep(5)
         max_time += 5
 
