@@ -19,6 +19,7 @@ def auth_error():
     cursor = conn.cursor()
     cursor.execute("select last_access_utc from cookies where host_key = 'cas.mioffice.cn' and name = 'TGC'")
     datas = cursor.fetchall()
+    conn.close()
     
     print(datas)
     flag_value = -100

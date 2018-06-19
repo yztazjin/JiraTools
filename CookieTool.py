@@ -64,14 +64,15 @@ def chrome_cookie():
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
     cursor.execute("select name, encrypted_value from cookies where host_key = 'cas.mioffice.cn'")
+    datas = cursor.fetchall()
+    conn.close()
 
     cookie = "" 
-    for row in cursor:
+    for row in datas:
         if row[0] == 'CASTGC':
             continue
         ENCRYPTED_VALUE = row[1]
         cookie += row[0] + "=" + decrypt(MY_PASS, ENCRYPTED_VALUE) +"; "
-    conn.close()
 
     return cookie[0:-2]
 
@@ -100,6 +101,7 @@ def check_chrome_autoupdate():
     cursor = conn.cursor()
     cursor.execute("select last_access_utc from cookies where host_key = 'cas.mioffice.cn' and name = 'TGC'")
     datas = cursor.fetchall()
+    conn.close()
     
     flag_value = -100
     if len(datas) > 0:
