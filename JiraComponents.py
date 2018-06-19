@@ -173,7 +173,7 @@ class JIRAUser:
             priority = 'Trivial'.ljust(17)
         else:
             print('did not find priority >>>', priority)
-            return 0
+            priority = 'X'
 
         searcher = re.search(r'<span[^<]+?id="created-val".*?</span>', html, re.S)
         searcher = re.search(r'datetime="(.*?)"', searcher.group(0))
@@ -183,16 +183,19 @@ class JIRAUser:
       
         diff = today_date - create_date
         limit_days = Config.get_limit_days(priority)
-        left_days = limit_days - diff.days
+        if limit_days > 0:
+            left_days = limit_days - diff.days
 
-        days_desc = create_date
-        if left_days > 0:
-            days_desc = "未超期 %3d 天"%left_days
-        elif left_days == 0:
-            days_desc = "未超期   0 天"
+            days_desc = create_date
+            if left_days > 0:
+                days_desc = "未超期 %3d 天"%left_days
+            elif left_days == 0:
+                days_desc = "未超期   0 天"
+            else:
+                left_days = -left_days
+                days_desc = "已超期 %3d 天"%left_days
         else:
-            left_days = -left_days
-            days_desc = "已超期 %3d 天"%left_days
+            days_desc = ''
 
         print(url.ljust(48), priority, ownername, days_desc)
 

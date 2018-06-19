@@ -21,12 +21,12 @@ def get_di(priority):
     根据 Jira 等级获取 Di 值
     '''
     config = load_config()
-    return config['di'][priority.strip()]
+    return config['di'].get(priority.strip(), -1)
 
 
 def get_limit_days(priority):
     config = load_config()
-    return config['limit_days'][priority.strip()]
+    return config['limit_days'].get(priority.strip(), -1)
 
 def get_user():
     '''
