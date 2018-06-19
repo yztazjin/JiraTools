@@ -45,14 +45,11 @@ def chrome_cookie():
         print('Chrome password not found!')
 
     import sqlite3
-    import os
     import getpass
-    import shutil
     # /home/hujinqi/.config/google-chrome/Default
     path = f'/home/{getpass.getuser()}/.config/google-chrome/Default/Cookies'
-    shutil.copy(path, os.path.dirname(os.path.abspath(__file__)))
-
-    conn = sqlite3.connect(f'{os.path.dirname(os.path.abspath(__file__))}/Cookies')
+    
+    conn = sqlite3.connect(path)
     cursor = conn.cursor()
     cursor = conn.execute("select name, encrypted_value from cookies where host_key = 'cas.mioffice.cn'")
 
@@ -64,5 +61,4 @@ def chrome_cookie():
         cookie += row[0] + "=" + decrypt(MY_PASS, ENCRYPTED_VALUE) +"; "
     conn.close()
 
-    os.remove(f"{os.path.dirname(os.path.abspath(__file__))}/Cookies")
     return cookie[0:-2]

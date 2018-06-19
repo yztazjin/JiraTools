@@ -6,7 +6,9 @@ try:
     from JiraTools import CookieTool
 except Exception as e:
     pwd = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(os.path.dirname(pwd))
+    pwd = os.path.dirname(pwd)
+    pwd = os.path.dirname(pwd)
+    sys.path.append(pwd)
     from JiraTools import CookieTool
 
 __cache = None
@@ -21,7 +23,7 @@ def get_di(priority):
     根据 Jira 等级获取 Di 值
     '''
     config = load_config()
-    return config['di'].get(priority.strip(), -1)
+    return config['di'].get(priority.strip(), 0)
 
 
 def get_limit_days(priority):

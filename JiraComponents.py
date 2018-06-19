@@ -8,11 +8,11 @@ import os
 import json
 import datetime
 try:
-    from JiraTools import Config
+    from JiraTools.config import Config
 except Exception as e:
     pwd = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(os.path.dirname(pwd))
-    from JiraTools import Config
+    from JiraTools.config import Config
 
 class JIRAUser:
 
@@ -34,7 +34,7 @@ class JIRAUser:
         '''
         auth_cookie = Config.get_cookie()
         # use cookie to login
-        if auth_cookie != None:
+        if auth_cookie != None and auth_cookie.strip() != '':
             
             # requests session will auto manage cookies for us just like a browser
             self.session.cookies.clear()
