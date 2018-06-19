@@ -14,6 +14,7 @@ def get_cookie():
         pwd = os.path.dirname(os.path.abspath(__file__))
         pwd = os.path.dirname(pwd)
         pwd = os.path.dirname(pwd)
+        sys.path.append(pwd)
         from JiraTools import CookieTool
 
     return CookieTool.chrome_cookie()
@@ -163,4 +164,3 @@ def set_config_from_args(args):
 
 def isValidValue(value):
     return value != None and not value.startswith('-')
-
