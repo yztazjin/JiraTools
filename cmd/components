@@ -3,8 +3,10 @@
 # -*- coding: utf-8 -*-
 import re
 import sys
+import getpass
 
-sys.path.append('/home/hujinqi/Workspaces/pythons')
+if getpass.getuser() == 'hujinqi':
+    sys.path.append('/home/hujinqi/Workspaces/pythons')
 
 from JiraTools.JiraComponents import main
 
