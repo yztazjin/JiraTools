@@ -32,17 +32,9 @@ def decrypt(my_pass, encrypted_value):
 
 
 def chrome_cookie():
-    import time
-
-    max_time = 0
-    while not check_chrome_autoupdate():
-        print(f'wait chrome auto update cookies ...')
-        time.sleep(5)
-        max_time += 5
-
-        if  max_time >= 60:
-            print(f'wait failed')
-            exit(0)
+    
+    # assert valid cookie
+    assert_cookie()
 
     import secretstorage
 
@@ -77,6 +69,38 @@ def chrome_cookie():
     return cookie[0:-2]
 
 
+# just a format printer
+import asyncio
+import sys
+import itertools
+
+@asyncio.coroutine
+def wait_printer():   
+    print('')
+    write, flush = sys.stdout.write, sys.stdout.flush
+    for dot in itertools.cycle([".  ", ".. ", "..."]):
+        line = 'wait chrome update chookies '+dot
+        write(line)
+        flush()
+        write('\x08' * len(line))
+        try:
+            yield from asyncio.sleep(.6)
+        except asyncio.CancelledError:
+            write(' ' * len(line) + '\x08' * len(line))
+            write('chrome has updated the cookies db\n')
+            flush()
+            break
+
+
+@asyncio.coroutine
+def doAssert():
+    spinner = asyncio.async(wait_printer())
+    result = yield from check_chrome_autoupdate()
+    spinner.cancel()
+    return result
+
+
+@asyncio.coroutine
 def check_chrome_autoupdate():
     import os,sys
     
@@ -99,21 +123,40 @@ def check_chrome_autoupdate():
     
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
-    cursor.execute("select last_access_utc from cookies where host_key = 'cas.mioffice.cn' and name = 'TGC'")
-    datas = cursor.fetchall()
-    conn.close()
-    
-    flag_value = -100
-    if len(datas) > 0:
-        flag_value = datas[0][0]
-    elif config_flag_value != -100:
-        print('make sure you have refresh the https://cas.mioffice.cn/login on chrome')
-        exit(1)
 
-    if flag_value != config_flag_value:
-        config = Config.load_config()
-        config['cookie_update_flag'] = 0
-        Config.dump_config(config)
-        return True
+    result = False
+    max_time = 0
+    while True and max_time < 60:
+
+        cursor.execute("select last_access_utc from cookies where host_key = 'cas.mioffice.cn' and name = 'TGC'")
+        datas = cursor.fetchall()
     
-    return False
+        flag_value = -100
+        if len(datas) > 0:
+            flag_value = datas[0][0]
+        elif config_flag_value != -100:
+            result = False
+            break
+
+        if flag_value != config_flag_value:
+            config = Config.load_config()
+            config['cookie_update_flag'] = 0
+            Config.dump_config(config)
+            result = True
+            break
+        else:
+            yield from asyncio.sleep(5)
+            max_time += 5
+    
+    conn.close()
+    return result
+
+
+def assert_cookie():
+    loop = asyncio.get_event_loop()
+    result = loop.run_until_complete(doAssert())
+    loop.close()
+
+    if not result:
+        print('make sure you have refresh the https://cas.mioffice.cn/login on chrome')
+        exit(0)
