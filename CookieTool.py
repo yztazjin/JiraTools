@@ -50,8 +50,11 @@ def chrome_cookie():
 
     import sqlite3
     import getpass
+    import os, shutil
     # /home/hujinqi/.config/google-chrome/Default
     path = f'/home/{getpass.getuser()}/.config/google-chrome/Default/Cookies'
+    shutil.copy(path, f'{os.path.dirname(os.path.abspath(__file__))}/Cookies')
+    path = f'{os.path.dirname(os.path.abspath(__file__))}/Cookies'
     
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
@@ -66,6 +69,7 @@ def chrome_cookie():
         ENCRYPTED_VALUE = row[1]
         cookie += row[0] + "=" + decrypt(MY_PASS, ENCRYPTED_VALUE) +"; "
 
+    os.remove(f'{os.path.dirname(os.path.abspath(__file__))}/Cookies')
     return cookie[0:-2]
 
 
@@ -118,19 +122,24 @@ def check_chrome_autoupdate():
 
     import sqlite3
     import getpass
-    # /home/hujinqi/.config/google-chrome/Default
-    path = f'/home/{getpass.getuser()}/.config/google-chrome/Default/Cookies'
-    
-    conn = sqlite3.connect(path)
-    cursor = conn.cursor()
+    import shutil
+
 
     result = False
     max_time = 0
     while True and max_time < 60:
+        
+        # /home/hujinqi/.config/google-chrome/Default
+        path = f'/home/{getpass.getuser()}/.config/google-chrome/Default/Cookies'
+        shutil.copy(path, f'{os.path.dirname(os.path.abspath(__file__))}/Cookies')
+        path = f'{os.path.dirname(os.path.abspath(__file__))}/Cookies'
 
+        conn = sqlite3.connect(path)
+        cursor = conn.cursor()
         cursor.execute("select last_access_utc from cookies where host_key = 'cas.mioffice.cn' and name = 'TGC'")
         datas = cursor.fetchall()
-    
+        conn.close()
+
         flag_value = -100
         if len(datas) > 0:
             flag_value = datas[0][0]
@@ -148,7 +157,8 @@ def check_chrome_autoupdate():
             yield from asyncio.sleep(5)
             max_time += 5
     
-    conn.close()
+
+    os.remove(f'{os.path.dirname(os.path.abspath(__file__))}/Cookies')
     return result
 
 
