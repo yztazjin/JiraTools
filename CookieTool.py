@@ -144,6 +144,9 @@ def check_chrome_autoupdate():
         if len(datas) > 0:
             flag_value = datas[0][0]
         elif config_flag_value != -100:
+            config = Config.load_config()
+            config['cookie_update_flag'] = flag_value
+            Config.dump_config(config)
             result = False
             break
 
