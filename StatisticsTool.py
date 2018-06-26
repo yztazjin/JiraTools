@@ -198,7 +198,7 @@ def output():
 
     if len(other['jira']) > 0:
         print(' >>> other <<< '.center(len(column), "*"))
-         print('')
+        print('')
         for item in other['jira']:
             print(f'http://jira.n.xiaomi.com/browse/{item}')
         print('')
