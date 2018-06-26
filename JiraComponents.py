@@ -10,11 +10,13 @@ import datetime
 try:
     from JiraTools.config import Config
     from JiraTools import printer
+    from JiraTools import StatisticsTool
 except Exception as e:
     pwd = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(os.path.dirname(pwd))
     from JiraTools.config import Config
     from JiraTools import printer
+    from JiraTools import StatisticsTool
 
 class JIRAUser:
 
@@ -282,14 +284,14 @@ class JIRAUser:
 
 def convertArgs():
     '''
-    show  [cts-other, cts-self, cts-all]
+    show  [cts-other, cts-self, cts-all, statistics]
     set   -u [username] -p [password] -c [cookie]
     trans [miui, odm, all]
     '''
     input_args = sys.argv[1:]
 
     if len(input_args) < 1:
-        return ['show', 'cts-other']
+        return ['show', 'statistics']
 
     return input_args
 
@@ -299,7 +301,7 @@ def main():
 
     if args[0] == '--help':
         print('\n', ' help '.center(75, "*"), '\n', sep='')
-        print(' show  [cts-other, cts-self, cts-all] 展示JIRA')
+        print(' show  [cts-other, cts-self, cts-all, statistics] 展示JIRA')
         print(' set -u [username] -p [password]')
         print(' trans [miui, odm, all] 分配JIRA')
         print(' chrome browser >>> https://cas.mioffice.cn/login to refresh chrome-cookie')
@@ -321,12 +323,16 @@ def main():
         print('login failed')
         exit(1)
     if args[0] == 'show':
-        filterstr = Config.get_filter(args[1])
-        if filterstr == None:
-            print('error filter option')
-            exit(1)
+
+        if args[1] == 'statistics':
+            StatisticsTool.statistics(user)
+        else:
+            filterstr = Config.get_filter(args[1])
+            if filterstr == None:
+                print('error filter option')
+                exit(1)
         
-        user.getJiraLinks(filterstr, 'show')
+            user.getJiraLinks(filterstr, 'show')
     elif args[0] == 'trans':
         typestr = args[1]
         filterstr = Config.get_filter('cts-other')
