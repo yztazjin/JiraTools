@@ -325,7 +325,10 @@ def main():
     if args[0] == 'show':
 
         if args[1] == 'statistics':
-            StatisticsTool.statistics(user)
+            date = '2018-04-01'
+            if len(args) > 2:
+                date = args[2]
+            StatisticsTool.statistics(user, date)
         else:
             filterstr = Config.get_filter(args[1])
             if filterstr == None:

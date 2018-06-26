@@ -8,13 +8,15 @@ import time
 
 pages = None
 issues = None
+date = None
 
 
 def statistics_core(user, index = 0):
     global pages
     global issues
-    
-    filterstr = 'created >=  2018-04-01 AND watcher in (hujinqi, weijuncheng) AND type = Bug ORDER BY  created ASC'
+    global date
+
+    filterstr = f'created >= {date} AND watcher in (hujinqi, weijuncheng) AND type = Bug ORDER BY  created ASC'
 
     params = {
         'startIndex':index,
@@ -243,9 +245,11 @@ def check_get_status(user):
         statistics_core(user, index)
     signal = True
     
-def statistics(user):
+def statistics(user, pdate):
     global signal
+    global date
     print('')
+    date = pdate
     signal = False
     spinner = threading.Thread(target=wait_printer)
     spinner.start()
