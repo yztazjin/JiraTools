@@ -8,15 +8,17 @@ import time
 
 pages = None
 issues = None
-date = None
+date_start = None
+date_end = None
 
 
 def statistics_core(user, index = 0):
     global pages
     global issues
-    global date
+    global date_start
+    global date_end
 
-    filterstr = f'created >= {date} AND watcher in (hujinqi, weijuncheng) AND type = Bug ORDER BY  created ASC'
+    filterstr = f'created >= {date_start} AND created < {date_end} AND watcher in (hujinqi, weijuncheng) AND type = Bug ORDER BY  created ASC'
 
     params = {
         'startIndex':index,
@@ -163,7 +165,20 @@ def output():
 
     tab = ''.ljust(10)
     column = 'casttype'+tab+'blocker'+tab+'critical'+tab+'major'+tab+'minor'+tab+'trivial'+tab+'total '
-    print(' >>> statistics <<< '.center(len(column), "*"))
+
+    global date_start
+    global date_end
+
+    import datetime
+    dates = date_end.split('-')
+    tmp_date_end = datetime.date(year=int(dates[0]), month=int(dates[1]), day=int(dates[2]))
+    tmp_date_end = tmp_date_end + datetime.timedelta(days=-1)
+    tmp_date_end = tmp_date_end.strftime(r'%Y-%m-%d')
+
+    if date_start != tmp_date_end:
+        print(f' >>> {date_start}~{tmp_date_end} <<< '.center(len(column), "*"))
+    else:
+        print(f' >>> {date_start} <<< '.center(len(column), "*"))
     print('')
     print(column)
 
@@ -245,11 +260,13 @@ def check_get_status(user):
         statistics_core(user, index)
     signal = True
     
-def statistics(user, pdate):
+def statistics(user, p_date_start, p_date_end):
     global signal
-    global date
+    global date_start
+    global date_end
     print('')
-    date = pdate
+    date_start = p_date_start
+    date_end = p_date_end
     signal = False
     spinner = threading.Thread(target=wait_printer)
     spinner.start()

@@ -325,10 +325,25 @@ def main():
     if args[0] == 'show':
 
         if args[1] == 'statistics':
-            date = '2018-04-01'
+            import datetime
+            date_today = datetime.date.today()
+
+            date_start = date_today + datetime.timedelta(days=-90)
+            date_start = date_start.strftime(r'%Y-%m-%d')
+
+            date_end = date_today + datetime.timedelta(days=1)
+            date_end = date_end.strftime(r'%Y-%m-%d')
+
             if len(args) > 2:
-                date = args[2]
-            StatisticsTool.statistics(user, date)
+                date_start = args[2]
+            if len(args) > 3:
+                date_end = args[3]
+                dates = date_end.split('-')
+                date_end = datetime.date(year=int(dates[0]), month=int(dates[1]), day=int(dates[2]))
+                date_end = date_end + datetime.timedelta(days=1)
+                date_end = date_end.strftime(r'%Y-%m-%d')
+                
+            StatisticsTool.statistics(user, date_start, date_end)
         else:
             filterstr = Config.get_filter(args[1])
             if filterstr == None:
