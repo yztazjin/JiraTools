@@ -6,12 +6,14 @@ import sys, re, itertools, time, os, zipfile
 
 class EnvConfig:
     today = datetime.date.today().strftime(r'%Y-%m-%d')
-    root_dir = f'/home/{getpass.getuser()}/MIUI/jiras/{today}'
-
+    root_dir = None
     signal = False
 
 
 def touch_link(user, link):
+
+    if '/' not in link:
+        link = f'http://jira.n.xiaomi.com/browse/{link}'
 
     html = user.session.get(link).text
     
@@ -71,6 +73,10 @@ def wait_printer():
 def touch(user, link):
 
     EnvConfig.signal = False
+
+    if getpass.getuser() == 'hujinqi':
+        EnvConfig.root_dir = f'/home/{getpass.getuser()}/MIUI/jiras/{EnvConfig.today}'
+
     spinner = threading.Thread(target=wait_printer)
     spinner.start()
 
@@ -81,4 +87,4 @@ def touch(user, link):
 
     EnvConfig.signal = True
     spinner.join()
-    print(f'enjoy jiras in "{EnvConfig.root_dir} :-)"\n')
+    print(f'enjoy jiras in "{EnvConfig.root_dir}" :-)\n')
