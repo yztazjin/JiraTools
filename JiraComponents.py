@@ -7,16 +7,15 @@ import sys
 import os
 import json
 import datetime
-try:
-    from JiraTools.config import Config
-    from JiraTools import printer
-    from JiraTools import StatisticsTool
-except Exception as e:
-    pwd = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(os.path.dirname(pwd))
-    from JiraTools.config import Config
-    from JiraTools import printer
-    from JiraTools import StatisticsTool
+
+pwd = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(pwd))
+    
+from JiraTools.config import Config
+from JiraTools import printer
+from JiraTools import StatisticsTool
+from JiraTools.supports import annexs
+
 
 class JIRAUser:
 
@@ -287,6 +286,7 @@ def convertArgs():
     show  [cts-other, cts-self, cts-all, statistics]
     set   -u [username] -p [password] -c [cookie]
     trans [miui, odm, all]
+    touch [all, jira link]
     '''
     input_args = sys.argv[1:]
 
@@ -303,7 +303,8 @@ def main():
         print('\n', ' help '.center(75, "*"), '\n', sep='')
         print(' show  [cts-other, cts-self, cts-all, statistics] 展示JIRA')
         print(' set -u [username] -p [password]')
-        print(' trans [miui, odm, all] 分配JIRA')
+        print(' trans [miui, odm, all] 分配模块')
+        print(' touch [all, jira link]')
         print(' chrome browser >>> https://cas.mioffice.cn/login to refresh chrome-cookie')
         print('\n', '*'*75, '\n', sep='')
         exit(0)
@@ -361,6 +362,9 @@ def main():
 
         for link in user.getJiraLinks(filterstr, typestr):
             user.updateComponents(link)
+    elif args[0] == 'touch':
+        link = args[1]
+        annexs.touch(user, link)
     else:
         print('invalid params')
         exit(1)

@@ -1,5 +1,3 @@
-from requests_html import HTML
-import requests
 import re
 import sys, itertools
 import threading
