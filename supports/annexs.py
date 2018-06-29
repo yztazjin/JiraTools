@@ -20,10 +20,22 @@ def touch_link(user, link):
     pattern_res_url = re.compile(r'<div class="attachment-thumb"><a href="(.*?)" draggable="true".*?<time.*?>(.*?)</time>')
     res_urls = pattern_res_url.findall(html)
     res_urls = list(dict.fromkeys(res_urls, 1).keys())
+
+    res_urls = [list(x) for x in res_urls]
     
     for res in res_urls:
+        times = res[1]
+        if '/' in times:
+            tmps = times.split(' ')
+            
+            dates = tmps[0].split('/')[::-1]
+            datestr = convert_date(dates)
+
+            res[1] = datestr + '/'+ ' '.join(tmps[1:][::-1])
+
+    for res in res_urls:
         url = f"http://jira.n.xiaomi.com/{res[0]}"
-        filepath = f"{EnvConfig.root_dir}/{link[link.rindex('/')+1:]}"
+        filepath = f"{EnvConfig.root_dir}/{link[link.rindex('/')+1:]}/{res[1]}"
         if not os.path.exists(filepath):
             os.makedirs(filepath)
         filepath = f"{filepath}/{url[url.rindex('/')+1:]}"
@@ -95,6 +107,39 @@ def wait_printer():
             break
     write(' ' * len(line) + '\x08' * len(line))
     flush()
+
+
+def convert_date(dates):
+    year = '20'+dates[0]
+    day = dates[2].ljust(2, '0')
+
+    month = dates[1]
+    if '一' in month or 'Jan' in month:
+        month = '01'
+    elif '二' in month or 'Feb' in month:
+        month = '02'
+    elif '三' in month or 'Mar' in month:
+        month = '03'
+    elif '四' in month or 'Apr' in month:
+        month = '04'
+    elif '五' in month or 'May' in month:
+        month = '05'
+    elif '六' in month or 'Jun' in month:
+        month = '06'
+    elif '七' in month or 'Jul' in month:
+        month = '07'
+    elif '八' in month or 'Aug' in month:
+        month = '08'
+    elif '九' in month or 'Sep' in month:
+        month = '09'
+    elif '十' in month or 'Oct' in month:
+        month = '10'
+    elif '十一' in month or 'Nov' in month:
+        month = '11'
+    elif '十二' in month or 'Dec' in month:
+        month = '12'
+    
+    return year+'-'+month+'-'+day
 
 
 def touch(user, link):
