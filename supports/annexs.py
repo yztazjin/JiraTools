@@ -1,7 +1,7 @@
 import getpass
 import datetime
 import threading
-import sys, re, itertools, time, os, zipfile
+import sys, re, itertools, time, os
 
 
 class EnvConfig:
@@ -35,14 +35,41 @@ def touch_link(user, link):
             with open(filepath, 'wb') as f:
                 for chunk in filebytes.iter_content(204800):
                     f.write(chunk)
-        
-            if filepath.endswith('.zip'):
-                zips = zipfile.ZipFile(filepath)
 
-                if f"{url[url.rindex('/')+1:]}/".replace('.zip', '') in zips.namelist():
-                    zips.extractall(path=os.path.dirname(filepath))
-                else:
-                    zips.extractall(path=filepath.replace('.zip', ''))
+            extract_file(filepath)
+
+
+def extract_file(filepath):
+    if filepath.endswith('.zip'):
+        import zipfile
+        zips = zipfile.ZipFile(filepath)
+
+        if f"{filepath[filepath.rindex('/')+1:]}/".replace('.zip', '') in zips.namelist():
+            zips.extractall(path=os.path.dirname(filepath))
+        else:
+            zips.extractall(path=filepath.replace('.zip', ''))
+        zips.close()
+    elif filepath.endswith('tar.gz'):
+        import tarfile
+        extract_dir = filepath.replace('.tar.gz', '')
+        os.makedirs(extract_dir)
+
+        tarfile = tarfile.open(filepath, 'r:gz')
+        for file_name in tarfile.getnames():
+            tarfile.extract(file_name, extract_dir)
+        tarfile.close()
+
+        extract_file(extract_dir)
+    elif filepath.endswith('txt.gz'):
+        import gzip
+        extract_target = filepath.replace('.gz', '')
+        gzips = gzip.GzipFile(filepath)
+        open(extract_target, 'wb').write(gzips.read())
+        gzips.close()
+    elif os.path.isdir(filepath):
+        for file in os.listdir(filepath):
+            extract_file(f'{filepath}/{file}')
+        
 
 
 def touch_filter(user):
