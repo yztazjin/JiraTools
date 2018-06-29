@@ -109,11 +109,15 @@ def touch(user, link):
     spinner = threading.Thread(target=wait_printer)
     spinner.start()
 
-    if link == 'all':
-        touch_filter(user)
-    else:
-        touch_link(user, link)
-
-    EnvConfig.signal = True
+    try:
+        if link == 'all':
+            touch_filter(user)
+        else:
+            touch_link(user, link)
+    except Exception as e:
+        print(e)
+    finally:
+        EnvConfig.signal = True
+    
     spinner.join() #阻塞当前上下文环境的线程，直到调用此方法的线程终
     print(f'enjoy jiras in "{EnvConfig.root_dir}" :-)\n')

@@ -268,7 +268,14 @@ def statistics(user, p_date_start, p_date_end):
     signal = False
     spinner = threading.Thread(target=wait_printer)
     spinner.start()
-    check_get_status(user)
+
+    try:
+        check_get_status(user)
+    except Exception as e:
+        print(e)
+    finally:
+        signal = True
+    
     spinner.join()
     output()
     
