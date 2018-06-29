@@ -3,7 +3,7 @@ import datetime
 import threading
 import sys, re, itertools, time, os
 
-
+#附件下载
 class EnvConfig:
     today = datetime.date.today().strftime(r'%Y-%m-%d')
     root_dir = None
@@ -29,12 +29,12 @@ def touch_link(user, link):
         filepath = f"{filepath}/{url[url.rindex('/')+1:]}"
         
         if not os.path.exists(filepath):
-            filebytes = user.session.get(url)
+            filebytes = user.session.get(url) #下载文件资源地址，返回bit数据
             
-            filebytes.raise_for_status()
+            filebytes.raise_for_status() #检查状态
             with open(filepath, 'wb') as f:
                 for chunk in filebytes.iter_content(204800):
-                    f.write(chunk)
+                    f.write(chunk)  #将下载的文件从缓存写到磁盘路径上
 
             extract_file(filepath)
 
@@ -103,6 +103,8 @@ def touch(user, link):
 
     if getpass.getuser() == 'hujinqi':
         EnvConfig.root_dir = f'/home/{getpass.getuser()}/MIUI/jiras/{EnvConfig.today}'
+    elif getpass.getuser() == 'weijuncheng':
+        EnvConfig.root_dir = f'/home/{getpass.getuser()}/cts/MIUI/jiras/{EnvConfig.today}'
 
     spinner = threading.Thread(target=wait_printer)
     spinner.start()
@@ -113,5 +115,5 @@ def touch(user, link):
         touch_link(user, link)
 
     EnvConfig.signal = True
-    spinner.join()
+    spinner.join() #阻塞当前上下文环境的线程，直到调用此方法的线程终
     print(f'enjoy jiras in "{EnvConfig.root_dir}" :-)\n')
