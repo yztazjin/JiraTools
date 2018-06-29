@@ -157,12 +157,24 @@ def touch(user, link):
     try:
         if link == 'all':
             touch_filter(user)
+
+            filepath = f"{EnvConfig.root_dir}"
         else:
             touch_link(user, link)
+
+            if '/' in link:
+                filepath = f"{EnvConfig.root_dir}/{link[link.rindex('/')+1:]}"
+            else:
+                filepath = f"{EnvConfig.root_dir}/{link}"
+        
     except Exception as e:
         print(e)
+        filepath = None
     finally:
         EnvConfig.signal = True
     
     spinner.join() #阻塞当前上下文环境的线程，直到调用此方法的线程终
     print(f'enjoy jiras in "{EnvConfig.root_dir}" :-)\n')
+
+    if filepath is not None:
+        os.popen(f'nautilus -w {filepath}', 'r')
