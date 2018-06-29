@@ -1,6 +1,6 @@
 {
     "di": {
-        "Critical": 5,
+        "Critical": 3,
         "Blocker": 10,
         "Major": 1,
         "Minor": 0.1
