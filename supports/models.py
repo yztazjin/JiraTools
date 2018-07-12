@@ -42,14 +42,18 @@ def find_target_model(user, key):
     
     outputs = list()
     max_l = 0
-    key = key.lower()
+    key = key.replace('手机', '').lower()
     for model in models:
-        if key in model['name'].lower() or key in model['model'].lower():
-            output = f"*{' '*4}{model['name'].ljust(20)}{model['model'].ljust(10)}{' '*4}"
+        if key in model['name'].replace('手机','').lower() or key in model['model'].lower():
+            extra = 0
+            if '手机' not in model['name']:
+                extra = 2
+            output = f"*{' '*4}{model['name'].ljust(30+extra)}{model['model'].ljust(10)}{' '*4}"
             if len(output) > max_l:
                 max_l = len(output)
             outputs.append(output)
 
+    
     print('')
     if len(outputs) == 0:
         print("* can't find the mobile info".ljust(41))
