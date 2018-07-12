@@ -15,6 +15,7 @@ from JiraTools.config import Config
 from JiraTools import printer
 from JiraTools import StatisticsTool
 from JiraTools.supports import annexs
+from JiraTools.supports import models
 
 
 class JIRAUser:
@@ -365,6 +366,9 @@ def main():
     elif args[0] == 'touch':
         link = args[1]
         annexs.touch(user, link)
+    elif args[0] == 'whats':
+        argument = args[1]
+        models.todo(user, argument)
     else:
         print('invalid params')
         exit(1)

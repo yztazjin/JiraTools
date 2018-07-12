@@ -4,3 +4,4 @@
 /.idea
 /.vscode
 /supports/__pycache__
+/config/models.json
