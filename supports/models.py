@@ -2,14 +2,14 @@ import os
 import requests
 import re
 import json
-
+from JiraTools import printer
 
 path = '%s/config/models.json'%os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def touch_models_table(user):
     uri = 'http://husky.pt.miui.com/device/info'
     resp = user.session.get(uri)
-    if response.url != uri:
+    if resp.url != uri:
             printer.auth_error()
             exit(0)
     html = resp.text
