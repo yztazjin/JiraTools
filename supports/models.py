@@ -9,6 +9,9 @@ path = '%s/config/models.json'%os.path.dirname(os.path.dirname(os.path.abspath(_
 def touch_models_table(user):
     uri = 'http://husky.pt.miui.com/device/info'
     resp = user.session.get(uri)
+    if response.url != uri:
+            printer.auth_error()
+            exit(0)
     html = resp.text
 
     models_pattern = re.compile(r'<tr>.*?</tr>', re.S)
