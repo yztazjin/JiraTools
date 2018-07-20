@@ -162,12 +162,19 @@ class JIRAUser:
             raise Exception('not login')
 
         html = self.session.get(url).text
-        searcher = re.search(r'displayName&quot;:&quot;[0-9a-zA-Z ]*([^a-zA-Z]*?)&quot;', html)
-        ownername = searcher.group(1)
+        searcher = re.search(r'<dl>(.*?)</dl>', html, re.S)
+        owner_line = searcher.group(1)
+        searcher = re.search(r'</span></span>(.*?)</span>', owner_line, re.S)
+        ownername = searcher.group(1).strip()
+        # searcher = re.search(r'displayName&quot;:&quot;[0-9a-zA-Z ]*([^a-zA-Z]*?)&quot;', html)
+        # ownername = searcher.group(1)
         space_num = ownername.count(' ')
         ownername = ownername + ' '*(10-len(ownername)+space_num) + ' '*(10-len(ownername))
 
         searcher = re.search(r'<span id="priority-val".*?title="(.*?)".*?/>', html, re.S)
+        if searcher is None:
+            print("Didn't find the priority, maybe something wrong with server, just try again")
+            exit(1)
         priority = searcher.group(0)
         if 'Critical' in priority:
             priority = 'Critical'.ljust(17)
