@@ -227,6 +227,7 @@ def get_to_owner(jira, html):
         elif 'HQ' in jira:
             # 华勤
             to_owner = 'v-zhangruijie'
+            
     elif 'media' in title or 'audio' in title or 'video' in title:
         if 'HTH' in jira:
             # 龙旗
