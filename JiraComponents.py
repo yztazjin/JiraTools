@@ -161,21 +161,19 @@ class JIRAUser:
         if not self.isAuthed:
             raise Exception('not login')
 
-        html = self.session.get(url).text
-        searcher = re.search(r'<dl>(.*?)</dl>', html, re.S)
-        owner_line = searcher.group(1)
-        searcher = re.search(r'</span></span>(.*?)</span>', owner_line, re.S)
-        ownername = searcher.group(1).strip()
-        # searcher = re.search(r'displayName&quot;:&quot;[0-9a-zA-Z ]*([^a-zA-Z]*?)&quot;', html)
-        # ownername = searcher.group(1)
-        space_num = ownername.count(' ')
-        ownername = ownername + ' '*(10-len(ownername)+space_num) + ' '*(10-len(ownername))
+        try:
+            html = self.session.get(url).text
+            searcher = re.search(r'displayName&quot;:&quot;[0-9a-zA-Z ]*([^a-zA-Z]*?)&quot;', html)
+            ownername = searcher.group(1)
+            space_num = ownername.count(' ')
+            ownername = ownername + ' '*(10-len(ownername)+space_num) + ' '*(10-len(ownername))
 
-        searcher = re.search(r'<span id="priority-val".*?title="(.*?)".*?/>', html, re.S)
-        if searcher is None:
-            print("Didn't find the priority, maybe something wrong with server, just try again")
+            searcher = re.search(r'<span id="priority-val".*?title="(.*?)".*?/>', html, re.S)
+            priority = searcher.group(0)
+        except Exception as e:
+            print("Parse jira_html fail, maybe something wrong with server, just try again")
             exit(1)
-        priority = searcher.group(0)
+
         if 'Critical' in priority:
             priority = 'Critical'.ljust(17)
         elif 'Blocker' in priority:
@@ -226,31 +224,35 @@ class JIRAUser:
 
         JIRANumber = url.replace('http://jira.n.xiaomi.com/browse/','').ljust(15)
 
-        html = self.session.get(url).text
-        searcher = re.search(r'issueId=([0123456789]+)', html)
-        issueId = searcher.group(1)
+        try:
+            html = self.session.get(url).text
+            searcher = re.search(r'issueId=([0123456789]+)', html)
+            issueId = searcher.group(1)
 
-        searcher = re.search(r'atl_token=(.*?)"', html)
-        atl_token = searcher.group(1)
+            searcher = re.search(r'atl_token=(.*?)"', html)
+            atl_token = searcher.group(1)
 
-        searcher = re.search(r'<span id="assignee-val" class="view-issue-field">(.*?)</span>', html, re.S)
-        searcher = re.search(r'([^;]*?@.*?\.com)', searcher.group(1))
-        email = searcher.group(1)
+            searcher = re.search(r'<span id="assignee-val" class="view-issue-field">(.*?)</span>', html, re.S)
+            searcher = re.search(r'([^;]*?@.*?\.com)', searcher.group(1))
+            email = searcher.group(1)
 
-        searcher = re.search(r'displayName&quot;:&quot;[0-9a-zA-Z ]*([^a-zA-Z]*?)&quot;', html)
-        ownername = searcher.group(1)
-        ownername = ownername + '  '*(5-len(ownername))
+            searcher = re.search(r'displayName&quot;:&quot;[0-9a-zA-Z ]*([^a-zA-Z]*?)&quot;', html)
+            ownername = searcher.group(1)
+            ownername = ownername + '  '*(5-len(ownername))
 
-        components = list()
-        searcher = re.search(r'<span class="shorten" id="components-field">(.*?)</span>', html, re.S)
-        if searcher:
-            text = searcher.group(1).strip()
-            for tmp in text.split(','):
-                searcher = re.search(r'>(.*?)<', tmp)
-                components.append(searcher.group(1))
+            components = list()
+            searcher = re.search(r'<span class="shorten" id="components-field">(.*?)</span>', html, re.S)
+            if searcher:
+                text = searcher.group(1).strip()
+                for tmp in text.split(','):
+                    searcher = re.search(r'>(.*?)<', tmp)
+                    components.append(searcher.group(1))
 
-        pattern = re.compile(r'.*@(.*)\.com')
-        host = pattern.match(email).group(1)
+            pattern = re.compile(r'.*@(.*)\.com')
+            host = pattern.match(email).group(1)
+        except Exception as e:
+            print("Parse jira_html fail, maybe something wrong with server, just try again")
+            exit(1)
 
         params = {
                 'atl_token':atl_token,
@@ -296,13 +298,17 @@ class JIRAUser:
         if not self.isAuthed:
             raise Exception('not login')
         
-        html = self.session.get(url).text
-        searcher = re.search(r'issueId=([0123456789]+)', html)
-        issueId = searcher.group(1)
+        try:
+            html = self.session.get(url).text
+            searcher = re.search(r'issueId=([0123456789]+)', html)
+            issueId = searcher.group(1)
 
-        searcher = re.search(r'displayName&quot;:&quot;[0-9a-zA-Z ]*([^a-zA-Z]*?)&quot;', html)
-        ownername = searcher.group(1)
-        ownername = ownername + '  '*(5-len(ownername))
+            searcher = re.search(r'displayName&quot;:&quot;[0-9a-zA-Z ]*([^a-zA-Z]*?)&quot;', html)
+            ownername = searcher.group(1)
+            ownername = ownername + '  '*(5-len(ownername))
+        except Exception as e:
+            print("Parse jira_html fail, maybe something wrong with server, just try again")
+            exit(1)
 
         jira_number = url.replace('http://jira.n.xiaomi.com/browse/','')
         post_url = f'http://jira.n.xiaomi.com/rest/api/1.0/issues/{issueId}/watchers'
@@ -340,6 +346,7 @@ def main():
         print('\n', ' help '.center(75, "*"), '\n', sep='')
         print(' show  [cts-other, cts-self, cts-all, statistics] 展示JIRA')
         print(' set -u [username] -p [password]')
+        print(' set -fk [key word] -fe [filter expression] 设置自定义filter')
         print(' trans [miui, odm, all] 分配模块')
         print(' touch [all, jira link] 生成JIRA工作目录')
         print(' watch [jira link, jira filter, jira brief] watch jiras')
@@ -387,10 +394,15 @@ def main():
         else:
             filterstr = Config.get_filter(args[1])
             if filterstr == None:
-                print('error filter option')
-                exit(1)
-        
-            user.getJiraLinks(filterstr, 'show')
+
+                if 'jira.n.xiaomi.com/browse' in args[1]:
+                    user.printBuglist(args[1])
+                else:
+                    filterstr = args[1]
+
+            if filterstr != None:
+
+                user.getJiraLinks(filterstr, 'show')
     elif args[0] == 'trans':
         typestr = args[1]
         filterstr = Config.get_filter('cts-other')

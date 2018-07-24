@@ -54,11 +54,27 @@ def set_user(username, password):
     '''
     if username == None or password == None:
         print('username, password cannot set only one')
+        return
 
     config = load_config()
     config['user']['username'] = username
     config['user']['password'] = password
     dump_config(config)
+    print('username, password set success')
+
+
+def set_filter(fk, fe):
+    '''
+    持久化自定义 filter
+    '''
+    if fk == None or fe == None:
+        print('filter_key, filter_expression cannot set only one')
+        return
+
+    config = load_config()
+    config['filter'][fk] = fe
+    dump_config(config)
+    print('filter_key, filter_expression set success')
 
 
 def load_config():
@@ -132,6 +148,8 @@ def get_owners():
 def set_config_from_args(args):
     username = None
     password = None
+    filter_key = None
+    filter_expr = None
 
     if len(args) < 1 or len(args) % 2 != 0:
         print('invalid args >>>',args)
@@ -146,6 +164,7 @@ def set_config_from_args(args):
             else:
                 print('invalid config_value username >>>',args[1])
                 exit(1)
+
         elif args[0] == '-p':
             password = args[1]
             if isValidValue(password):
@@ -154,12 +173,33 @@ def set_config_from_args(args):
             else:
                 print('invalid config_value password >>>',args[1])
                 exit(1)
+
+        elif args[0] == '-fk':
+            filter_key = args[1]
+            if isValidValue(filter_key):
+                args = args[2:]
+            else:
+                print('invalid config_value filter key word >>>',args[1])
+                exit(1)
+
+        elif args[0] == '-fe':
+            filter_expr = args[1]
+            if isValidValue(filter_expr):
+                
+                args = args[2:]
+            else:
+                print('invalid config_value filter expression >>>',args[1])
+                exit(1)
+
         else:
             print('invalid config_key >>>',args[0])
             exit(1)
     
     if username != None or password != None:
         set_user(username, password)
+    
+    if filter_key !=None or filter_expr !=None:
+        set_filter(filter_key, filter_expr)
 
 
 def isValidValue(value):
