@@ -293,7 +293,7 @@ class JIRAUser:
 
     def startWatch(self, url):
         '''
-            add watcher
+        add watcher
         '''
         if not self.isAuthed:
             raise Exception('not login')
@@ -322,7 +322,66 @@ class JIRAUser:
         response = self.session.post(post_url, data=json.dumps(params), headers=header)
         if response.status_code == 200:
             print(url.ljust(48), ownername, 'watched success')
+        else:
+            print(url.ljust(48), ownername, 'watched fail')
+    
+
+    def dispatch(self, url):
+        '''
+        dispatch and add comment
+        '''
+        if not self.isAuthed:
+            raise Exception('not login')
         
+        jira_number = url.replace('http://jira.n.xiaomi.com/browse/','')
+
+        to_ownername = 'weijuncheng'
+
+        try:
+            html = self.session.get(url).text
+            to_ownername = Config.get_to_owner(html)
+
+            if to_ownername == None:
+                print(url.ljust(48), f'dispatch not needed')
+                return
+
+            searcher = re.search(r'issueId=([0123456789]+)', html)
+            issueId = searcher.group(1)
+
+            searcher = re.search(r'atl_token=(.*?)"', html)
+            atl_token = searcher.group(1)
+
+        except Exception as e:
+            print("Parse jira_html fail, maybe something wrong with server, just try again")
+            exit(1)
+        
+        post_comment_url = f'http://jira.n.xiaomi.com/rest/api/2/issue/{jira_number}/comment'
+        header = {
+            'Content-Type': 'application/json'
+        }
+        params = {
+            'body': f'[~{to_ownername}] 麻烦帮忙看下这个问题吧，谢谢。'
+        }
+        response = self.session.post(post_comment_url, data=json.dumps(params), headers=header)
+        if response.status_code !=200 and response.status_code != 201:
+            print(url.ljust(48), 'add comment fail')
+            exit(1)
+
+        params = {
+            'assignee': to_ownername,
+            'issueId': issueId,
+            'atl_token': atl_token,
+            'singleFieldEdit': 'true',
+            'fieldsToForcePresent': 'assignee'
+        }
+
+        post_assigne_url = 'http://jira.n.xiaomi.com/secure/AjaxIssueAction.jspa?decorator=none'
+        response = self.session.post(post_assigne_url, data=params)
+        if response.status_code == 200:
+            print(url.ljust(48), f'dispatch to {to_ownername} success')
+        else:
+            print(url.ljust(48), f'dispatch to {to_ownername} fail')
+
 
 def convertArgs():
     '''
@@ -348,8 +407,9 @@ def main():
         print(' set -u [username] -p [password]')
         print(' set -fk [key word] -fe [filter expression] 设置自定义filter')
         print(' trans [miui, odm, all] 分配模块')
-        print(' touch [all, jira link] 生成JIRA工作目录')
-        print(' watch [jira link, jira filter, jira brief] 关注 jiras')
+        print(' dispatch [jira link, jira filter, filter brief] 转交 jira owner')
+        print(' touch [all, jira link] 生成 jira 工作目录')
+        print(' watch [jira link, jira filter, filter brief] 关注 jiras')
         print(' whats [model key workd] 根据关键字获取手机信息')
         print(' chrome browser >>> https://cas.mioffice.cn/login to refresh chrome-cookie')
         print('\n', '*'*75, '\n', sep='')
@@ -369,6 +429,7 @@ def main():
     if not user.isAuthed:
         print('login failed')
         exit(1)
+
     if args[0] == 'show':
 
         if args[1] == 'statistics':
@@ -391,18 +452,18 @@ def main():
                 date_end = date_end.strftime(r'%Y-%m-%d')
                 
             StatisticsTool.statistics(user, date_start, date_end)
+
         else:
             filterstr = Config.get_filter(args[1])
             if filterstr == None:
-
                 if 'jira.n.xiaomi.com/browse' in args[1]:
                     user.printBuglist(args[1])
                 else:
                     filterstr = args[1]
 
             if filterstr != None:
-
                 user.getJiraLinks(filterstr, 'show')
+
     elif args[0] == 'trans':
         typestr = args[1]
         filterstr = Config.get_filter('cts-other')
@@ -413,12 +474,15 @@ def main():
 
         for link in user.getJiraLinks(filterstr, typestr):
             user.updateComponents(link)
+
     elif args[0] == 'touch':
         link = args[1]
         annexs.touch(user, link)
+
     elif args[0] == 'whats':
         argument = args[1]
         models.todo(user, argument)
+
     elif args[0] == 'watch':
         filterstr = Config.get_filter(args[1])
         if filterstr == None:
@@ -430,7 +494,19 @@ def main():
         if filterstr != None:
             for link in user.getJiraLinks(filterstr, 'all'):
                 user.startWatch(link)
-            
+
+    elif args[0] == 'dispatch':
+        filterstr = Config.get_filter(args[1])
+        if filterstr == None:
+            if 'jira.n.xiaomi.com/browse' in args[1]:
+                user.dispatch(args[1])
+            else:
+                filterstr = args[1]
+        
+        if filterstr != None:
+            for link in user.getJiraLinks(filterstr, 'all'):
+                user.dispatch(link)
+
     else:
         print('invalid params')
         exit(1)

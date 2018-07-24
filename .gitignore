@@ -5,3 +5,4 @@
 /.vscode
 /supports/__pycache__
 /config/models.json
+/config/modules.json

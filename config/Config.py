@@ -204,3 +204,19 @@ def set_config_from_args(args):
 
 def isValidValue(value):
     return value != None and not value.startswith('-')
+
+
+def get_to_owner(html):
+    html = html.lower()
+
+    import re
+    # body = re.search(r'<body.*?>(.*?)</body>', html, re.S).group(1)
+    title = re.search(r'<title>(.*?)</title>', html, re.S).group(1)
+
+    to_owner = None
+    if 'camera' in title:
+        to_owner = 'zhanghaipo'
+    elif 'media' in title or 'audio' in title or 'video' in title:
+        to_owner = 'xiongdawei'
+    
+    return to_owner
