@@ -289,6 +289,35 @@ class JIRAUser:
             print(url.ljust(48), ownername, 'ignore >>> unknown owner ...')
 
 
+    def startWatch(self, url):
+        '''
+            add watcher
+        '''
+        if not self.isAuthed:
+            raise Exception('not login')
+        
+        html = self.session.get(url).text
+        searcher = re.search(r'issueId=([0123456789]+)', html)
+        issueId = searcher.group(1)
+
+        searcher = re.search(r'displayName&quot;:&quot;[0-9a-zA-Z ]*([^a-zA-Z]*?)&quot;', html)
+        ownername = searcher.group(1)
+        ownername = ownername + '  '*(5-len(ownername))
+
+        jira_number = url.replace('http://jira.n.xiaomi.com/browse/','')
+        post_url = f'http://jira.n.xiaomi.com/rest/api/1.0/issues/{issueId}/watchers'
+
+        params = {
+            'dummy':'true'
+        }
+        header = {
+            'Content-Type': 'application/json'
+        }
+        response = self.session.post(post_url, data=json.dumps(params), headers=header)
+        if response.status_code == 200:
+            print(url.ljust(48), ownername, 'watched success')
+        
+
 def convertArgs():
     '''
     show  [cts-other, cts-self, cts-all, statistics]
@@ -376,6 +405,18 @@ def main():
     elif args[0] == 'whats':
         argument = args[1]
         models.todo(user, argument)
+    elif args[0] == 'watch':
+        filterstr = Config.get_filter(args[1])
+        if filterstr == None:
+            if 'jira.n.xiaomi.com/browse' in args[1]:
+                user.startWatch(args[1])
+            else:
+                filterstr = args[1]
+        
+        if filterstr != None:
+            for link in user.getJiraLinks(filterstr, 'all'):
+                user.startWatch(link)
+            
     else:
         print('invalid params')
         exit(1)
