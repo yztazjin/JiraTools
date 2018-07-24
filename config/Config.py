@@ -206,7 +206,7 @@ def isValidValue(value):
     return value != None and not value.startswith('-')
 
 
-def get_to_owner(html):
+def get_to_owner(jira, html):
     html = html.lower()
 
     import re
@@ -215,8 +215,30 @@ def get_to_owner(html):
 
     to_owner = None
     if 'camera' in title:
-        to_owner = 'zhanghaipo'
+        if 'HTH' in jira:
+            # 龙旗
+            to_owner = 'p-mawenke'
+        elif 'MIUI' in jira:
+            # MIUI
+            to_owner = 'zhanghaipo'
+        elif 'HONGMI' in jira:
+            # 闻泰
+            to_owner = 'p-sunli6'
+        elif 'HQ' in jira:
+            # 华勤
+            to_owner = 'v-zhangruijie'
     elif 'media' in title or 'audio' in title or 'video' in title:
-        to_owner = 'xiongdawei'
+        if 'HTH' in jira:
+            # 龙旗
+            to_owner = 'p-mawenke'
+        elif 'MIUI' in jira:
+            # MIUI
+            to_owner = 'xiongdawei'
+        elif 'HONGMI' in jira:
+            # 闻泰
+            to_owner = 'p-sunli6'
+        elif 'HQ' in jira:
+            # 华勤
+            to_owner = 'v-zhangruijie'
     
     return to_owner

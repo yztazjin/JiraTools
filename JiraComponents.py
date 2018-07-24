@@ -339,7 +339,7 @@ class JIRAUser:
 
         try:
             html = self.session.get(url).text
-            to_ownername = Config.get_to_owner(html)
+            to_ownername = Config.get_to_owner(jira_number, html)
 
             if to_ownername == None:
                 print(url.ljust(48), f'dispatch not needed')
