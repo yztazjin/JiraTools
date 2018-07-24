@@ -5,6 +5,10 @@ import re
 import sys
 import getpass
 
+#  1. 加入当前工程目录的上级目录
+#  2. .bashrc 加入 components 文件所在目录
+#  3. source 
+#  4. 开始使用 components --help 了解命令信息
 if getpass.getuser() == 'hujinqi':
     sys.path.append('/home/hujinqi/Workspaces/pythons')
 if getpass.getuser() == 'weijuncheng':
