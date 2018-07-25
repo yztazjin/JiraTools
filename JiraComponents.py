@@ -525,11 +525,13 @@ def main():
             if filterstr == None:
                 if 'jira.n.xiaomi.com/browse' in args[1]:
                     user.printBuglist(args[1])
-                else:
-                    filterstr = args[1]
+            elif ' ' in args[1]:
+                filterstr = args[1]
 
             if filterstr != None:
                 user.getJiraLinks(filterstr, 'show')
+            else:
+                print('expect for a valid filter expression')
 
     elif args[0] == 'trans' and args[1] != None:
         typestr = args[1].strip()
@@ -558,12 +560,15 @@ def main():
                 user.startWatch(args[1])
             elif ' ' not in args[1] and '/' not in args[1]:
                 user.startWatch(f'http://jira.n.xiaomi.com/browse/{args[1]}')
-            else:
+            elif ' ' in args[1]:
                 filterstr = args[1]
         
         if filterstr != None:
             for link in user.getJiraLinks(filterstr, 'all'):
                 user.startWatch(link)
+        else:
+            print('expect for a valid filter expression')
+
 
     elif args[0] == 'dispatch' and args[1] != None:
         args[1] = args[1].strip()
@@ -573,12 +578,15 @@ def main():
                 user.dispatch(args[1])
             elif ' ' not in args[1] and '/' not in args[1]:
                 user.dispatch(f'http://jira.n.xiaomi.com/browse/{args[1]}')
-            else:
+            elif ' ' in args[1]:
                 filterstr = args[1]
         
         if filterstr != None:
             for link in user.getJiraLinks(filterstr, 'all'):
                 user.dispatch(link)
+        else:
+            print('expect for a valid filter expression')
+
 
     elif args[0] == 'random' and args[1] != None:
         import random
@@ -594,13 +602,16 @@ def main():
             elif ' ' not in args[1] and '/' not in args[1]:
                 owner = owners[random.randint(0, endint)]
                 user.dispatch_owner(f'http://jira.n.xiaomi.com/browse/{args[1]}', owner)
-            else:
+            elif ' ' in args[1]:
                 filterstr = args[1]
         
         if filterstr != None:
             for link in user.getJiraLinks(filterstr, 'all'):
                 owner = owners[random.randint(0, endint)]
                 user.dispatch_owner(link, owner)
+        else:
+            print('expect for a valid filter expression')
+
     else:
         print('invalid params')
         exit(1)
