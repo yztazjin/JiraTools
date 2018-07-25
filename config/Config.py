@@ -227,7 +227,7 @@ def get_to_owner(jira, html):
         elif 'HQ' in jira:
             # 华勤
             to_owner = 'v-zhangruijie'
-            
+
     elif 'media' in title or 'audio' in title or 'video' in title:
         if 'HTH' in jira:
             # 龙旗
@@ -243,3 +243,20 @@ def get_to_owner(jira, html):
             to_owner = 'v-zhangruijie'
     
     return to_owner
+
+def get_owner_components_value(owner):
+    if owner == 'xiongdawei':
+        # Media Audio Video
+        return '17396'
+    elif owner == 'zhanghaipo':
+        # Camera
+        return '17394'
+    elif owner == 'p-sunli6':
+        # 闻泰
+        return '13455'
+    elif owner == 'v-zhangruijie':
+        # 华勤
+        return '15835'
+    elif owner == 'p-mawenke':
+        # 龙旗
+        return '13460'

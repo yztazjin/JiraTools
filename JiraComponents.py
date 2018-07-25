@@ -354,19 +354,35 @@ class JIRAUser:
         except Exception as e:
             print("Parse jira_html fail, maybe something wrong with server, just try again")
             exit(1)
-        
-        post_comment_url = f'http://jira.n.xiaomi.com/rest/api/2/issue/{jira_number}/comment'
+
+        # 添加评论
         header = {
             'Content-Type': 'application/json'
         }
         params = {
             'body': f'[~{to_ownername}] 麻烦帮忙看下这个问题吧，谢谢。'
         }
+        post_comment_url = f'http://jira.n.xiaomi.com/rest/api/2/issue/{jira_number}/comment'
         response = self.session.post(post_comment_url, data=json.dumps(params), headers=header)
         if response.status_code !=200 and response.status_code != 201:
             print(url.ljust(48), 'add comment fail')
             exit(1)
 
+        # 修改 component
+        params = {
+            'atl_token':atl_token,
+            'singleFieldEdit':'true',
+            'fieldsToForcePresent':'components',
+            'issueId':issueId,
+            'components': Config.get_owner_components_value(to_ownername)
+        }
+        post_components_url = 'http://jira.n.xiaomi.com/secure/AjaxIssueAction.jspa?decorator=none'
+        response = self.session.post(post_components_url, data=params)
+        if response.status_code !=200 and response.status_code != 201:
+            print(url.ljust(48), 'set components fail')
+            exit(1)
+
+        # 转移 owner
         params = {
             'assignee': to_ownername,
             'issueId': issueId,
@@ -374,7 +390,6 @@ class JIRAUser:
             'singleFieldEdit': 'true',
             'fieldsToForcePresent': 'assignee'
         }
-
         post_assigne_url = 'http://jira.n.xiaomi.com/secure/AjaxIssueAction.jspa?decorator=none'
         response = self.session.post(post_assigne_url, data=params)
         if response.status_code == 200:
@@ -430,7 +445,7 @@ def main():
         print('login failed')
         exit(1)
 
-    if args[0] == 'show':
+    if args[0] == 'show' and args[1] != None:
 
         if args[1] == 'statistics':
             import datetime
@@ -464,8 +479,8 @@ def main():
             if filterstr != None:
                 user.getJiraLinks(filterstr, 'show')
 
-    elif args[0] == 'trans':
-        typestr = args[1]
+    elif args[0] == 'trans' and args[1] != None:
+        typestr = args[1].strip()
         filterstr = Config.get_filter('cts-other')
 
         if typestr not in ['miui', 'odm', 'all']:
@@ -479,15 +494,18 @@ def main():
         link = args[1]
         annexs.touch(user, link)
 
-    elif args[0] == 'whats':
+    elif args[0] == 'whats' and args[1] != None:
         argument = args[1]
         models.todo(user, argument)
 
-    elif args[0] == 'watch':
+    elif args[0] == 'watch' and args[1] != None:
+        args[1] = args[1].strip()
         filterstr = Config.get_filter(args[1])
         if filterstr == None:
             if 'jira.n.xiaomi.com/browse' in args[1]:
                 user.startWatch(args[1])
+            elif ' ' not in args[1] and '/' not in args[1]:
+                user.startWatch(f'http://jira.n.xiaomi.com/browse/{args[1]}')
             else:
                 filterstr = args[1]
         
@@ -495,11 +513,14 @@ def main():
             for link in user.getJiraLinks(filterstr, 'all'):
                 user.startWatch(link)
 
-    elif args[0] == 'dispatch':
+    elif args[0] == 'dispatch' and args[1] != None:
+        args[1] = args[1].strip()
         filterstr = Config.get_filter(args[1])
         if filterstr == None:
             if 'jira.n.xiaomi.com/browse' in args[1]:
                 user.dispatch(args[1])
+            elif ' ' not in args[1] and '/' not in args[1]:
+                user.dispatch(f'http://jira.n.xiaomi.com/browse/{args[1]}')
             else:
                 filterstr = args[1]
         
