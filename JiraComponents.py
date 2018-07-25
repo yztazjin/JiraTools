@@ -398,6 +398,57 @@ class JIRAUser:
             print(url.ljust(48), f'dispatch to {to_ownername} fail')
 
 
+    def dispatch_owner(self, url, owner):
+        '''
+        指定owner
+        '''
+        if not self.isAuthed:
+            raise Exception('not login')
+
+        jira_number = url.replace('http://jira.n.xiaomi.com/browse/','')
+
+        try:
+            html = self.session.get(url).text
+            to_ownername = owner
+
+            searcher = re.search(r'issueId=([0123456789]+)', html)
+            issueId = searcher.group(1)
+
+            searcher = re.search(r'atl_token=(.*?)"', html)
+            atl_token = searcher.group(1)
+
+        except Exception as e:
+            print("Parse jira_html fail, maybe something wrong with server, just try again")
+            exit(1)
+        
+        # 添加评论
+        header = {
+            'Content-Type': 'application/json'
+        }
+        params = {
+            'body': f'[~{to_ownername}] 麻烦帮忙看下这个问题吧，谢谢。'
+        }
+        post_comment_url = f'http://jira.n.xiaomi.com/rest/api/2/issue/{jira_number}/comment'
+        response = self.session.post(post_comment_url, data=json.dumps(params), headers=header)
+        if response.status_code !=200 and response.status_code != 201:
+            print(url.ljust(48), 'add comment fail')
+            exit(1)
+
+        # 转移 owner
+        params = {
+            'assignee': to_ownername,
+            'issueId': issueId,
+            'atl_token': atl_token,
+            'singleFieldEdit': 'true',
+            'fieldsToForcePresent': 'assignee'
+        }
+        post_assigne_url = 'http://jira.n.xiaomi.com/secure/AjaxIssueAction.jspa?decorator=none'
+        response = self.session.post(post_assigne_url, data=params)
+        if response.status_code == 200:
+            print(url.ljust(48), f'dispatch to {to_ownername} success')
+        else:
+            print(url.ljust(48), f'dispatch to {to_ownername} fail')
+
 def convertArgs():
     '''
     show  [cts-other, cts-self, cts-all, statistics]
@@ -426,6 +477,7 @@ def main():
         print(' touch        [all, jira link] 生成 jira 工作目录')
         print(' watch        [jira link, jira filter, filter brief] 关注 jiras')
         print(' whats        [model key workd] 根据关键字获取手机信息')
+        print(' random       [jira link, jira filter, filter brief] random dispatch')
         print('\n chrome browser >>> https://cas.mioffice.cn/login to refresh chrome-cookie')
         print('\n', '*'*75, '\n', sep='')
         exit(0)
@@ -528,6 +580,27 @@ def main():
             for link in user.getJiraLinks(filterstr, 'all'):
                 user.dispatch(link)
 
+    elif args[0] == 'random' and args[1] != None:
+        import random
+        owners = ['hujinqi', 'weijuncheng']
+        endint = len(owners) - 1
+        
+        args[1] = args[1].strip()
+        filterstr = Config.get_filter(args[1])
+        if filterstr == None:
+            if 'jira.n.xiaomi.com/browse' in args[1]:
+                owner = owners[random.randint(0, endint)]
+                user.dispatch_owner(args[1], owner)
+            elif ' ' not in args[1] and '/' not in args[1]:
+                owner = owners[random.randint(0, endint)]
+                user.dispatch_owner(f'http://jira.n.xiaomi.com/browse/{args[1]}', owner)
+            else:
+                filterstr = args[1]
+        
+        if filterstr != None:
+            for link in user.getJiraLinks(filterstr, 'all'):
+                owner = owners[random.randint(0, endint)]
+                user.dispatch_owner(link, owner)
     else:
         print('invalid params')
         exit(1)
